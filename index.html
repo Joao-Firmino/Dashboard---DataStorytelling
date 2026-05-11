@@ -33,6 +33,16 @@
             </h1>
         </div>
     </header>
+    <nav class="tabs-nav" aria-label="Navegação do dashboard">
+        <button class="tab-btn is-active" data-tab-target="tab-current" type="button">
+            Visão Agrupada (Atual)
+        </button>
+        <button class="tab-btn" data-tab-target="tab-poc" type="button">
+            Jornada do Estudante (PoC 2.0)
+        </button>
+    </nav>
+
+    <section id="tab-current" class="tab-panel is-active" role="tabpanel" aria-label="Dashboard atual">
     <div class="topper-container">
         <div class="selectors-container">
             <div class="activity-selector-container">
@@ -54,43 +64,43 @@
         <div class="flow-conteiner">
             <div class="linha-horizontal"></div>
             <div class="circulo-container">
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="course_vis">
+                <div class="circulo" draggable="true" id="course_vis">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-mouse-pointer" style="color: #8d6e63;"></i>
                     </div>
                     <span class="texto-circulo">Visualização do curso</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="resource_vis">
+                <div class="circulo" draggable="true" id="resource_vis">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-folder-open" style="color: #e64a19;"></i>
                     </div>
                     <span class="texto-circulo">Visualização dos recursos</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="forum_vis">
+                <div class="circulo" draggable="true" id="forum_vis">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-comments" style="color: #ff94c2;"></i>
                     </div>
                     <span class="texto-circulo">Visualização do fórum</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="forum_participation">
+                <div class="circulo" draggable="true" id="forum_participation">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-comment-medical" style="color: #00bcd4"></i>
                     </div>
                     <span class="texto-circulo">Participação do fórum</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="assignment_vis">
+                <div class="circulo" draggable="true" id="assignment_vis">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-file-alt" style="color: #00897b;"></i>
                     </div>
                     <span class="texto-circulo">Visualização da atividade</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="assignment_try">
+                <div class="circulo" draggable="true" id="assignment_try">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-check" style="color: #819ca9;"></i>
                     </div>
                     <span class="texto-circulo">Tentativa da atividade</span>
                 </div>
-                <div class="circulo" draggable="true" ondragstart="drag(event)" id="assignment_sub">
+                <div class="circulo" draggable="true" id="assignment_sub">
                     <div class="icone-circulo">
                         <i class="fa-solid fa-check-double" style="color: #c0ca33"></i>
                     </div>
@@ -151,6 +161,40 @@
             <i class="fas fa-arrow-up"></i>
         </a>
     </div>
+    </section>
+
+    <section id="tab-poc" class="tab-panel" role="tabpanel" aria-label="Dashboard PoC 2.0">
+        <div class="poc-shell">
+            <div class="poc-header">
+                <h2 id="poc-title">Como os estudantes percorrem a atividade?</h2>
+                <div class="poc-actions">
+                    <select id="poc-activity-select" aria-label="Selecionar atividade"></select>
+                    
+                    <div class="poc-volume-filter">
+                        <label for="poc-min-volume">Mostrar rotas com mín. <span id="poc-min-volume-value">10</span> aluno(s):</label>
+                        <input type="range" id="poc-min-volume" min="1" max="50" value="10" aria-label="Volume mínimo de alunos">
+                    </div>
+                    
+                    <button id="btn-all" class="poc-filter-btn is-active" type="button">Todas as rotas</button>
+                    <button id="btn-drop" class="poc-filter-btn" type="button">Ver Evasões</button>
+                </div>
+            </div>
+
+            <div class="poc-main-content">
+                <div id="poc-dashboard-container" class="poc-chart-area"></div>
+                <div id="poc-detail-panel" class="poc-detail-panel">
+                    <div class="poc-panel-header">
+                        <h3>Detalhes da Trajetória</h3>
+                        <button id="poc-panel-close" type="button" aria-label="Fechar painel">×</button>
+                    </div>
+                    <div id="poc-panel-content" class="poc-panel-content">
+                        <p style="color: #999;">Clique em uma rota para ver detalhes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="./js/Libs/lodash.js"></script>
     <script src="./js/main.js" type="module"></script>

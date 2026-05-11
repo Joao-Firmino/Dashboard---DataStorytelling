@@ -1,11 +1,14 @@
 import lineChart from "../../Line/lineChart.js";
+import controller from "../../Line/functions/controller.js";
 
 function generateHistogram(dataToBePlotted, activity, datumBubble) {
     dataToBePlotted.sort((a, b) => a.average - b.average);
+    let selectedAverage = null;
 
-    const margin = { top: 18, right: 30, bottom: 20, left: 20 };
+    const margin = { top: 18, right: 30, bottom: 20, left: 38 };
     const width = 200;
     const height = 200;
+    const maxCount = d3.max(dataToBePlotted, d => d.len) || 0;
 
     const originalColor = d3.scaleLinear().domain([0, 2.5, 5, 7.5, 10]).range(['#FF0000', '#FFA500', '#FFF000', '#90EE90', '#008000']);
 
@@ -16,6 +19,27 @@ function generateHistogram(dataToBePlotted, activity, datumBubble) {
         .attr('height', height + margin.top + margin.bottom)
         .append('g')
         .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    function clearSelectionAndFilters() {
+        selectedAverage = null;
+        svg.selectAll('.rect')
+            .transition()
+            .duration(300)
+            .style('opacity', 1);
+
+        const studentsList = document.getElementById('students-list');
+        const lineChartContainer = document.getElementById('lineChart');
+
+        if (studentsList) {
+            studentsList.innerHTML = '';
+        }
+
+        if (lineChartContainer) {
+            lineChartContainer.innerHTML = '';
+        }
+
+        controller.clear();
+    }
 
     const x = d3
         .scaleBand()
@@ -30,16 +54,28 @@ function generateHistogram(dataToBePlotted, activity, datumBubble) {
 
     const y = d3
         .scaleLinear()
-        .domain([0, d3.max(dataToBePlotted, d => d.len)])
+        .domain([0, maxCount])
+        .nice()
         .range([height, 0]);
+
+    const yAxis = d3.axisLeft(y)
+        .ticks(Math.min(maxCount, 6))
+        .tickFormat(d3.format('d'));
+
+    svg
+        .append('g')
+        .attr('class', 'histogram-y-grid')
+        .call(
+            d3.axisLeft(y)
+                .ticks(Math.min(maxCount, 6))
+                .tickSize(-width)
+                .tickFormat('')
+        );
 
     svg
         .append('g')
         .attr('class', 'y-axis')
-        .call(d3.axisLeft(y));
-
-    svg.select('.y-axis').remove();
-    d3.select('.y-axis').style('display', 'none');
+        .call(yAxis);
 
     svg
         .selectAll('.rect')
@@ -53,13 +89,21 @@ function generateHistogram(dataToBePlotted, activity, datumBubble) {
         .style('fill', d => originalColor(d.average))
         .on("click", function () {
             const clickedRect = d3.select(this);
+            const d = clickedRect.datum();
+
+            // Segundo clique na mesma barra remove o filtro.
+            if (selectedAverage === d.average) {
+                clearSelectionAndFilters();
+                return;
+            }
+
+            selectedAverage = d.average;
 
             svg.selectAll('.rect')
                 .transition()
                 .duration(500)
                 .style('opacity', d => (d === clickedRect.datum()) ? 1 : 0.2);
 
-            const d = clickedRect.datum();
             lineChart(d.ids, activity, d.average, datumBubble);
         })
         .transition()
@@ -72,10 +116,7 @@ function generateHistogram(dataToBePlotted, activity, datumBubble) {
         const isNotBar = !event.target.matches("rect");
 
         if (isNotBar) {
-            svg.selectAll('.rect')
-                .transition()
-                .duration(500)
-                .style('opacity', 1);
+            clearSelectionAndFilters();
         }
     });
 

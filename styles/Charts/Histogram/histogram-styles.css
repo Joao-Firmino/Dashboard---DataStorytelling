@@ -15,3 +15,23 @@
 .rect {
     cursor: pointer; /* Altera o cursor quando o mouse está sobre as bolhas */
 }
+
+.histogram-y-grid .domain {
+    display: none;
+}
+
+.histogram-y-grid .tick line {
+    stroke: #6c757d;
+    stroke-opacity: 0.45;
+    stroke-dasharray: 4 4;
+}
+
+.y-axis .domain,
+.y-axis .tick line {
+    stroke: #495057;
+}
+
+.y-axis .tick text {
+    font-size: 11px;
+    fill: #212529;
+}

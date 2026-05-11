@@ -41,13 +41,19 @@ function consult(id) {
     }
 }
 
+function clear() {
+    bufferPeople = []
+    count = 0
+}
+
 const controller = {
     add: add,
     remove: remove,
     verifyPeople: verifyPeople,
     showCount: showCount,
     setCountFull: setCountFull,
-    consult: consult
+    consult: consult,
+    clear: clear
 }
 
 export default controller

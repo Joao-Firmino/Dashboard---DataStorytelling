@@ -1,22 +1,48 @@
 import histogram from "../../Histogram/histogram.js";
+import controller from "../../Line/functions/controller.js";
 
 function createGraph(dataToBePlotted, activity) {
     console.log(dataToBePlotted)
 
 
-    d3.select("svg").remove()
+    d3.select("#bubbleChart").selectAll("svg, .zoom-controls").remove();
     d3.select(".tooltip").remove();
+
+    function clearFiltersPanels() {
+        const histogramField = document.getElementById("histogram");
+        const lineChartField = document.getElementById("lineChart");
+        const studentsList = document.getElementById("students-list");
+
+        if (histogramField) {
+            histogramField.innerHTML = "";
+        }
+
+        if (lineChartField) {
+            lineChartField.innerHTML = "";
+        }
+
+        if (studentsList) {
+            studentsList.innerHTML = "";
+        }
+
+        controller.clear();
+    }
 
     const margin = { top: 0, right: 5, bottom: 80, left: 30 },
         width = 600,
         height = 350
 
-    const svg = d3.select("#bubbleChart")
+
+    const outerSvg = d3.select("#bubbleChart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .append("g")
+        .style("overflow", "visible");
+
+    const gContainer = outerSvg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const svg = gContainer.append("g");
 
     
         const diasDaSemana = {
@@ -37,26 +63,26 @@ function createGraph(dataToBePlotted, activity) {
     .range([0, width])
     .padding(1);
 
-svg.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
 
 // Adicione traduções em português inclinadas abaixo do eixo X
-svg.append("g")
-    .selectAll("text")
-    .data(dataToBePlotted.domainContent.x)
-    .enter()
-    .append("text")
-    .text(d => {
-        const diaSemana = d.split(",")[0]; // Extrai o dia da semana
-        return `${diasDaSemana[diaSemana]}, ${d.split(",")[1]}`; // Combina a tradução com o resto da data
-    })
-    .attr("x", d => x(d) + x.bandwidth() / 2)
-    .attr("y", height + 30) // Ajuste a posição vertical conforme necessário
-    .attr("text-anchor", "middle")
-    .attr("font-size", 10) // Ajuste o tamanho da fonte conforme necessário
-    .attr("fill-opacity", 1) // Define o preenchimento para tornar o texto visível
-    .attr("transform", d => `rotate(-25, ${x(d) + x.bandwidth() / 2}, ${height + 80})`); // Inclina o texto em -45 graus
+    svg.append("g")
+        .selectAll("text")
+        .data(dataToBePlotted.domainContent.x)
+        .enter()
+        .append("text")
+        .text(d => {
+            const diaSemana = d.split(",")[0]; // Extrai o dia da semana
+            return `${diasDaSemana[diaSemana]}, ${d.split(",")[1]}`; // Combina a tradução com o resto da data
+        })
+        .attr("x", d => x(d) + x.bandwidth() / 2)
+        .attr("y", height + 30) // Ajuste a posição vertical conforme necessário
+        .attr("text-anchor", "middle")
+        .attr("font-size", 10) // Ajuste o tamanho da fonte conforme necessário
+        .attr("fill-opacity", 1) // Define o preenchimento para tornar o texto visível
+        .attr("transform", d => `rotate(-25, ${x(d) + x.bandwidth() / 2}, ${height + 80})`); // Inclina o texto em -45 graus
 
 // Estilize os elementos de texto originais em inglês como transparentes
 svg.selectAll(".tick text")
@@ -128,14 +154,14 @@ svg.selectAll(".tick text")
 
     // Adicione linhas de grade para o eixo X
     svg.append("g")
-    .attr("class", "grid")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x).tickSize(-height).tickFormat(""));
+        .attr("class", "grid")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x).tickSize(-height).tickFormat(""));
 
     // Adicione linhas de grade para o eixo Y
     svg.append("g")
-    .attr("class", "grid")
-    .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
+        .attr("class", "grid")
+        .call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
 
     // Get the bubble color 
     function myColor(average) {
@@ -168,11 +194,11 @@ svg.selectAll(".tick text")
         .style("z-index", "9999");
 
     svg.append('g')
-    .selectAll("dot")
-    .data(dataToBePlotted.bubblesContent)
-    .enter()
-    .append("g")
-    .append("circle")
+        .selectAll("dot")
+        .data(dataToBePlotted.bubblesContent)
+        .enter()
+        .append("g")
+        .append("circle")
     .attr("class", "bubble")
     .attr("cx", function (d) { return x(d.date); })
     .attr("cy", function (d) { return y(d.event); })
@@ -181,17 +207,24 @@ svg.selectAll(".tick text")
     .style("opacity", "0.7")
     .attr("stroke", "black")
     .on("click", function (d) {
+        const currentBubble = d3.select(this);
+        const isAlreadySelected = currentBubble.classed("selected");
 
-        var histogramField = document.getElementById("histogram");
-    histogramField.innerHTML = "";
+        if (isAlreadySelected) {
+            currentBubble.classed("selected", false);
+            clearFiltersPanels();
+            return;
+        }
 
-    // Adicione a classe 'selected' apenas para a bolha clicada
-    d3.selectAll(".bubble").classed("selected", false); // Remove 'selected' de todas as bolhas
-    d3.select(this).classed("selected", true); // Adiciona 'selected' à bolha clicada
+        clearFiltersPanels();
 
-    // Outras ações desejadas ao clicar na bolha
-    var datum = d3.select(this).datum();
-    histogram(datum.grades, activity, datum);
+        // Adicione a classe 'selected' apenas para a bolha clicada
+        d3.selectAll(".bubble").classed("selected", false); // Remove 'selected' de todas as bolhas
+        currentBubble.classed("selected", true); // Adiciona 'selected' à bolha clicada
+
+        // Outras ações desejadas ao clicar na bolha
+        var datum = currentBubble.datum();
+        histogram(datum.grades, activity, datum);
     }).transition() // Inicia a transição para animar o crescimento do raio
     .duration(800)
     .attr("r", function (d) { return z(d.totalCases); }); 
