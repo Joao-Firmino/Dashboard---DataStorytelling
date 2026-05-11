@@ -57,55 +57,18 @@ function simplifyAssignmentSequence(route) {
     if (!Array.isArray(route)) return [];
     if (route.length === 0) return route.slice();
 
-    // Work on a copy
     let r = route.slice();
 
-    // 1) Truncate after the first `assignment_sub` (keep up to and including it)
+    // Remove consecutive duplicates
+    r = r.filter((v, i) => i === 0 || v !== r[i - 1]);
+
+    // Truncate after the first `assignment_sub`
     const firstSubIdx = r.indexOf("assignment_sub");
     if (firstSubIdx >= 0 && firstSubIdx < r.length - 1) {
         r = r.slice(0, firstSubIdx + 1);
     }
 
-    // 2) Keep only the first `course_vis`, remove subsequent ones
-    let seenCourse = false;
-    r = r.filter((ev) => {
-        if (ev === "course_vis") {
-            if (seenCourse) return false;
-            seenCourse = true;
-            return true;
-        }
-        return true;
-    });
-
-    // 3) Iteratively simplify assignment-related subsequences until stable:
-    //    - remove `assignment_vis` when immediately followed by `assignment_try` or `assignment_sub`
-    //    - remove `assignment_try` when immediately followed by `assignment_sub`
-    let changed = true;
-    while (changed) {
-        changed = false;
-        const out = [];
-
-        for (let i = 0; i < r.length; i++) {
-            const cur = r[i];
-            const next = r[i + 1];
-
-            if (cur === "assignment_vis" && (next === "assignment_try" || next === "assignment_sub")) {
-                changed = true;
-                continue;
-            }
-
-            if (cur === "assignment_try" && next === "assignment_sub") {
-                changed = true;
-                continue;
-            }
-
-            out.push(cur);
-        }
-
-        // remove consecutive duplicates that may appear after simplification
-        r = out.filter((v, i) => i === 0 || v !== out[i - 1]);
-    }
-
+    // Ensure we keep previous sequences like tentative and visits
     return r;
 }
 
