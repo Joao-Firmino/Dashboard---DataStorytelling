@@ -57,19 +57,14 @@ function simplifyAssignmentSequence(route) {
     if (!Array.isArray(route)) return [];
     if (route.length === 0) return route.slice();
 
-    let r = route.slice();
+    const normalizedRoute = route.filter((value, index) => index === 0 || value !== route[index - 1]);
+    const firstSubIdx = normalizedRoute.indexOf("assignment_sub");
 
-    // Remove consecutive duplicates
-    r = r.filter((v, i) => i === 0 || v !== r[i - 1]);
-
-    // Truncate after the first `assignment_sub`
-    const firstSubIdx = r.indexOf("assignment_sub");
-    if (firstSubIdx >= 0 && firstSubIdx < r.length - 1) {
-        r = r.slice(0, firstSubIdx + 1);
+    if (firstSubIdx >= 0) {
+        return normalizedRoute.slice(0, firstSubIdx + 1);
     }
 
-    // Ensure we keep previous sequences like tentative and visits
-    return r;
+    return normalizedRoute;
 }
 
 function routeHasSubmission(route) {
@@ -116,13 +111,11 @@ function buildUserRoutes(logRows, eventMap, gradeByUser) {
         });
 
         if (route.length > 0) {
-            const fullRoute = route.slice();
-            const simplifiedRoute = simplifyAssignmentSequence(fullRoute);
+            const simplifiedRoute = simplifyAssignmentSequence(route);
 
             userRoutes.push({
                 userId,
                 route: simplifiedRoute,
-                fullRoute: fullRoute.slice(),
                 hasSubmission: routeHasSubmission(simplifiedRoute),
                 grade: gradeByUser.get(String(userId)) ?? 0
             });
